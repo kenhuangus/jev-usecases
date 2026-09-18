@@ -1,0 +1,19 @@
+{
+  "invoice_text": "Invoice 8821 from Acme Supplies for 10 laptops at \\ each. Total \\. PO-4491.",
+  "vendor_name": "Acme Supplies",
+  "expected_vendor": "Acme Supplies",
+  "company_name": "TypeSafe Demo Co",
+  "expected_company": "TypeSafe Demo Co",
+  "po": {
+    "id": "PO-4491",
+    "amount_usd": 12000,
+    "items": "10 laptops"
+  },
+  "delivery": {
+    "received": true,
+    "items": "10 laptops"
+  },
+  "amount_usd": 12000,
+  "already_paid": false,
+  "prior_invoices": []
+}

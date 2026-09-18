@@ -1,0 +1,17 @@
+{
+  "path": "src/auth.py",
+  "kind": "code",
+  "content": "def login(user, password):\n    print(f\"Logging in {user} with password={password}\")\n    return True\n",
+  "rules": [
+    {
+      "id": "no_secret_logging",
+      "instructions": "Code logs secrets or passwords",
+      "severity": "error"
+    },
+    {
+      "id": "has_docstring",
+      "instructions": "Public function is missing a docstring",
+      "severity": "warning"
+    }
+  ]
+}

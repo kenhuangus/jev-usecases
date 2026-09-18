@@ -1,0 +1,42 @@
+{
+  "text": "A randomized trial of GLP-1 agonists reporting major adverse cardiovascular events in adults with type 2 diabetes.",
+  "taxonomy": {
+    "id": "root",
+    "label": "Research",
+    "description": "All research documents",
+    "children": [
+      {
+        "id": "bio",
+        "label": "Biology/Medicine",
+        "description": "Biological and medical research",
+        "children": [
+          {
+            "id": "cardio",
+            "label": "Cardiology",
+            "description": "Heart and cardiovascular studies",
+            "children": []
+          },
+          {
+            "id": "oncology",
+            "label": "Oncology",
+            "description": "Cancer studies",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "cs",
+        "label": "Computer Science",
+        "description": "Computing research",
+        "children": [
+          {
+            "id": "ml",
+            "label": "Machine Learning",
+            "description": "ML papers",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "transaction_narrative": "Customer sent 9 wires of \\,800 over two days to newly added overseas beneficiaries with no prior history.",
+  "kyc_summary": "Retail customer, salary income \\, expected activity domestic bill pay under \\/month.",
+  "alert_history": [
+    "Rapid beneficiary addition",
+    "Just-below-threshold repeats"
+  ],
+  "entities": [
+    "Jane Doe",
+    "Overseas Trading LLC"
+  ],
+  "amount_usd": 88200
+}

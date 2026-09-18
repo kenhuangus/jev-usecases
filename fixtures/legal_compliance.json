@@ -1,0 +1,13 @@
+{
+  "doc_type": "marketing_claim",
+  "text": "Our device cures hypertension in 7 days with no side effects. FDA approved for all ages.",
+  "required_clauses": [
+    "Include risk disclaimer",
+    "Avoid guaranteed cure language"
+  ],
+  "prohibited_claims": [
+    "Guaranteed cure",
+    "Unauthenticated FDA approval claims"
+  ],
+  "policy": "Marketing must not claim cures or unverified FDA approval."
+}

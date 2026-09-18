@@ -1,0 +1,28 @@
+{
+  "utterance": "Buy 2 shares of MON with a post-only limit one tick inside the touch",
+  "context": {
+    "market": "MON-USDC"
+  },
+  "functions": [
+    {
+      "name": "place_limit_order",
+      "description": "Place a limit order on the market",
+      "arg_enums": {
+        "side": {
+          "buy": "Buy",
+          "sell": "Sell"
+        },
+        "tif": {
+          "gtc": "Good til cancelled",
+          "ioc": "Immediate or cancel",
+          "post_only": "Post only"
+        }
+      }
+    },
+    {
+      "name": "cancel_all",
+      "description": "Cancel all open orders",
+      "arg_enums": {}
+    }
+  ]
+}

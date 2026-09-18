@@ -1,0 +1,11 @@
+{
+  "goal": "Book a flight from Zurich to London next Monday morning",
+  "last_observation": "Google Flights results loaded with 12 options. Cheapest nonstop is selected in the DOM.",
+  "last_error": null,
+  "steps_taken": 4,
+  "max_steps": 20,
+  "candidate_skills": {
+    "browser": "Interact with web pages",
+    "payments": "Handle checkout and payment forms"
+  }
+}

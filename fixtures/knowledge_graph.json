@@ -1,0 +1,14 @@
+{
+  "left": {
+    "name": "Acme Analytics",
+    "domain": "acme-analytics.com",
+    "hq": "Austin"
+  },
+  "right": {
+    "name": "ACME Analytics Inc.",
+    "website": "www.acme-analytics.com",
+    "city": "Austin, TX"
+  },
+  "left_source": "crm",
+  "right_source": "clearbit"
+}

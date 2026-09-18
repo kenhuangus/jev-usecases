@@ -1,0 +1,18 @@
+{
+  "name": "Alex Rivera",
+  "resume_text": "Staff engineer with 8 years Python, led a 6-person platform team, designed multi-region event pipelines on Kafka and Postgres.",
+  "interview_notes": "Strong system design; clear communication.",
+  "job": {
+    "title": "Senior Platform Engineer",
+    "level": "senior",
+    "must_have": [
+      "Python production experience",
+      "Distributed systems design",
+      "Team leadership"
+    ],
+    "nice_to_have": [
+      "Kafka",
+      "Postgres"
+    ]
+  }
+}

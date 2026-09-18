@@ -1,0 +1,13 @@
+{
+  "title": "GLP-1 receptor agonists and cardiovascular outcomes: a randomized trial",
+  "abstract": "We randomized 5000 adults with type 2 diabetes to GLP-1 RA or placebo and measured MACE over 3 years. Controls and primary endpoints are described.",
+  "inclusion_criteria": [
+    "Human clinical study",
+    "Reports cardiovascular outcomes",
+    "Diabetes population"
+  ],
+  "exclusion_criteria": [
+    "Animal-only study",
+    "Case report"
+  ]
+}

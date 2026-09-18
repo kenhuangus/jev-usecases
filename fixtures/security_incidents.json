@@ -1,0 +1,12 @@
+{
+  "alert_name": "LSASS memory access",
+  "description": "Process comsvcs.dll created a minidump of LSASS on host web-prod-12.",
+  "host": "web-prod-12",
+  "environment": "production",
+  "asset_criticality": "critical",
+  "recent_events": [
+    "Unusual privileged process spawn",
+    "Outbound connection to rare IP"
+  ],
+  "explainable_records": []
+}

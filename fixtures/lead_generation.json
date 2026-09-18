@@ -1,0 +1,28 @@
+{
+  "company_profile": "Series B fintech with 200 employees selling fraud APIs to mid-market banks.",
+  "executive_bio": "VP Engineering previously scaled payments infrastructure at a top bank.",
+  "inbound_message": "We are evaluating AI decisioning for transaction monitoring this quarter and want a technical demo.",
+  "icp": {
+    "industries": [
+      "fintech",
+      "banking"
+    ],
+    "company_sizes": [
+      "51-200",
+      "201-1000"
+    ],
+    "buyer_titles": [
+      "VP Engineering",
+      "Head of Fraud",
+      "CISO"
+    ],
+    "pains": [
+      "alert fatigue",
+      "false positives",
+      "manual review cost"
+    ],
+    "disqualifiers": [
+      "crypto-only startups under 10 people"
+    ]
+  }
+}

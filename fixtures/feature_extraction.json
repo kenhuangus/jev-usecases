@@ -1,0 +1,31 @@
+{
+  "record_id": "ticket-55",
+  "text": "I love the product but pricing is too high and I may cancel next month.",
+  "specs": [
+    {
+      "name": "churn_risk",
+      "kind": "score",
+      "instructions": "Churn risk",
+      "criteria": [
+        "Low",
+        "Medium",
+        "High"
+      ]
+    },
+    {
+      "name": "price_objection",
+      "kind": "noul",
+      "instructions": "Customer objects to price"
+    },
+    {
+      "name": "sentiment",
+      "kind": "choice",
+      "instructions": "Overall sentiment",
+      "criteria": {
+        "pos": "Positive",
+        "neu": "Neutral",
+        "neg": "Negative"
+      }
+    }
+  ]
+}

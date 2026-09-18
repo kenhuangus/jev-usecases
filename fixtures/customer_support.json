@@ -1,0 +1,20 @@
+{
+  "subject": "Duplicate charge",
+  "message": "I was charged twice for order A-104. Please refund the duplicate ASAP. This is urgent.",
+  "account_tier": "standard",
+  "prior_refunds_30d": 0,
+  "order": {
+    "id": "A-104",
+    "charges": [
+      {
+        "amount_usd": 49,
+        "status": "captured"
+      },
+      {
+        "amount_usd": 49,
+        "status": "captured"
+      }
+    ]
+  },
+  "refund_policy": "Duplicate charges are eligible for a refund."
+}

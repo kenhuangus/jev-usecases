@@ -1,0 +1,21 @@
+{
+  "goal": "Issue refund for duplicate charge on order A-104",
+  "transcript": "Agent looked up order, confirmed duplicate capture, issued refund tool call, told customer refund is processing.",
+  "tool_calls": [
+    {
+      "tool": "lookup_order",
+      "args": {
+        "id": "A-104"
+      }
+    },
+    {
+      "tool": "issue_refund",
+      "args": {
+        "id": "A-104",
+        "amount": 49
+      }
+    }
+  ],
+  "final_response": "I issued a \\ refund for the duplicate charge. It should appear in 3-5 days.",
+  "customer_tier": "standard"
+}

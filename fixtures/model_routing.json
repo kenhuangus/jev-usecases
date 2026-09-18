@@ -1,0 +1,4 @@
+{
+  "prompt": "Refactor our authentication middleware to support rotating JWT keys without downtime.",
+  "domain_hint": "backend engineering"
+}
