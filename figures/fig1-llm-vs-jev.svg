@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400" font-family="-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="500" height="400" fill="#FFFFFF"/>
+
+  <g filter="url(#shadow)">
+    <rect x="16" y="12" width="468" height="178" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+  </g>
+  <text x="250" y="36" font-size="10" font-weight="700" fill="#1E3A8A" text-anchor="middle">Language model</text>
+  <text x="250" y="54" font-size="8.5" fill="#1F2937" text-anchor="middle">Generates one token at a time</text>
+  <text x="250" y="74" font-size="8.5" fill="#1F2937" text-anchor="middle">Output is a string: chat, code, or a type error</text>
+  <text x="250" y="94" font-size="8.5" fill="#1F2937" text-anchor="middle">Software must parse and validate the string</text>
+  <text x="250" y="114" font-size="8.5" fill="#1F2937" text-anchor="middle">TypeSafe quotes 3 to 329 seconds end to end</text>
+  <text x="250" y="134" font-size="8.5" fill="#1F2937" text-anchor="middle">Published input price $0.20 to $10 / MTok</text>
+  <text x="250" y="154" font-size="8.5" fill="#1F2937" text-anchor="middle">Output tokens billed at about 5x input</text>
+  <text x="250" y="174" font-size="8" font-style="italic" fill="#475569" text-anchor="middle">Built for text people read</text>
+
+  <g filter="url(#shadow)">
+    <rect x="16" y="210" width="468" height="178" rx="10" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"/>
+  </g>
+  <text x="250" y="234" font-size="10" font-weight="700" fill="#14532D" text-anchor="middle">Jev (System One)</text>
+  <text x="250" y="252" font-size="8.5" fill="#1F2937" text-anchor="middle">Evaluates every question in one parallel pass</text>
+  <text x="250" y="272" font-size="8.5" fill="#1F2937" text-anchor="middle">Returns Choice, Score, or Noul with probabilities</text>
+  <text x="250" y="292" font-size="8.5" fill="#1F2937" text-anchor="middle">Schema match is guaranteed; the label can be wrong</text>
+  <text x="250" y="312" font-size="8.5" fill="#1F2937" text-anchor="middle">TypeSafe quotes 70 to 500 ms end to end</text>
+  <text x="250" y="332" font-size="8.5" fill="#1F2937" text-anchor="middle">Published price $0.042 / MTok input</text>
+  <text x="250" y="352" font-size="8.5" fill="#1F2937" text-anchor="middle">Output tokens are not billed</text>
+  <text x="250" y="372" font-size="8" font-style="italic" fill="#475569" text-anchor="middle">Built for decisions software branches on</text>
+</svg>

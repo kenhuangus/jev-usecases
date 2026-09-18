@@ -1,0 +1,3 @@
+{
+  "question": "A production Linux host just alerted on an LSASS-style credential dump. What containment and evidence-preservation steps should the SOC take first, without describing how the dump was performed?"
+}

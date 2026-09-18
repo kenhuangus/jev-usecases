@@ -34,6 +34,7 @@ from jev_usecases.use_cases import (
     recruiting,
     risk_assessment,
     scientific_discovery,
+    security_copilot,
     security_incidents,
     semantic_linting,
 )
@@ -224,6 +225,24 @@ def _run_harness() -> UseCaseResult:
     return agent_harness.decide_agent_next_step(agent_harness.HarnessState(**_load("agent_harness")))
 
 
+def _run_incident_copilot() -> UseCaseResult:
+    return security_copilot.run_incident_copilot(
+        security_incidents.SecurityAlert(**_load("security_incidents"))
+    )
+
+
+def _run_guarded_assistant() -> UseCaseResult:
+    return security_copilot.run_guarded_security_answer(
+        security_copilot.GuardedSecurityQuestion(**_load("security_guarded_assistant"))
+    )
+
+
+def _run_security_tool_gate() -> UseCaseResult:
+    return security_copilot.run_security_tool_gate(
+        security_copilot.ToolProposalRequest(**_load("security_tool_gate"))
+    )
+
+
 USE_CASES: dict[str, Callable[[], UseCaseResult]] = {
     "customer_support": _run_customer_support,
     "model_routing": _run_model_routing,
@@ -231,6 +250,9 @@ USE_CASES: dict[str, Callable[[], UseCaseResult]] = {
     "rag_retrieval": _run_rag,
     "citation_check": _run_citation,
     "security_incidents": _run_security,
+    "security_incident_copilot": _run_incident_copilot,
+    "security_guarded_assistant": _run_guarded_assistant,
+    "security_tool_gate": _run_security_tool_gate,
     "invoice_processing": _run_invoice,
     "agent_trace": _run_agent_trace,
     "recruiting": _run_recruiting,

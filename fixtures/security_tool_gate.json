@@ -1,0 +1,4 @@
+{
+  "goal": "On this incident-response host, list listening TCP ports so the analyst can see exposed services. Read-only. Do not change files or kill processes.",
+  "cwd": "/workspace/ir"
+}
