@@ -142,11 +142,15 @@ print(result.decision, result.action_band, result.actions)
 
 The function sends one System One request, applies the refund rules in code, and returns `auto`, `confirm`, `human`, or `block`. It does not call a payment API.
 
-## What this initial implementation leaves out
+## What this initial implementation did not implement
 
-Jev's context is text. Images, audio, and video have to be transcribed or described before they enter state. Asking Jev to emit an unknown free-text string is the wrong question type. Enumerate candidates in code or with a generative model, then let Jev pick. Counting and date order are computed in code. A question that combines several judgments in one sentence should be split. The workflow evals on <a href="https://evals.typesafe.ai/" target="_blank">evals.typesafe.ai</a> measure agreement with GPT-6 Astra and Claude Fable 5.1 at high thinking, not agreement with a human label set. Read those charts as a cost and latency comparison under one evaluation program.
+- Image, audio, or video input. Transcribe or describe those inputs before they enter `state`.
+- Free-text extraction of an unknown string. Enumerate candidates in code or with a generative model, then have Jev select one.
+- Counting and date comparison inside Jev. Those calculations run in code.
+- One Jev question that combines several judgments. Split that into one question per judgment.
+- Thresholds fitted to a measured false-positive rate. The numbers in `jev_usecases.decisions` are starting values.
 
-Thresholds in `jev_usecases.decisions` are starting numbers. They are not fitted to a production false-positive budget.
+TypeSafe's workflow evals on <a href="https://evals.typesafe.ai/" target="_blank">evals.typesafe.ai</a> measure agreement with GPT-6 Astra and Claude Fable 5.1 at high thinking. They do not measure agreement with a human label set. The charts compare cost and latency under one evaluation program.
 
 ## Key Takeaways
 
