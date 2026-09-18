@@ -8,6 +8,9 @@ from pathlib import Path
 from typing import Any
 
 from jev_usecases.models import UseCaseResult
+from jev_usecases.soc.agents import CloseoutRequest, RecoveryRequest
+from jev_usecases.soc.pipeline import run_agentic_soc
+from jev_usecases.soc import agents as soc_agents
 from jev_usecases.use_cases import (
     advertising,
     agent_harness,
@@ -243,6 +246,57 @@ def _run_security_tool_gate() -> UseCaseResult:
     )
 
 
+def _alert() -> security_incidents.SecurityAlert:
+    return security_incidents.SecurityAlert(**_load("security_incidents"))
+
+
+def _run_soc_triage() -> UseCaseResult:
+    return soc_agents.run_triage_agent(_alert())
+
+
+def _run_soc_mitigation() -> UseCaseResult:
+    return soc_agents.run_mitigation_agent(_alert())
+
+
+def _run_soc_investigation() -> UseCaseResult:
+    return soc_agents.run_investigation_agent(_alert())
+
+
+def _run_soc_escalation() -> UseCaseResult:
+    return soc_agents.run_escalation_agent(_alert())
+
+
+def _run_soc_pipeline() -> UseCaseResult:
+    return run_agentic_soc(_alert())
+
+
+def _run_soc_recovery() -> UseCaseResult:
+    data = _load("soc_recovery")
+    alert = security_incidents.SecurityAlert(**data["alert"])
+    return soc_agents.run_recovery_agent(
+        RecoveryRequest(
+            alert=alert,
+            triage_decision=data["triage_decision"],
+            containment_actions_completed=data["containment_actions_completed"],
+            monitoring_clean=data["monitoring_clean"],
+            hours_contained=data["hours_contained"],
+        )
+    )
+
+
+def _run_soc_closeout() -> UseCaseResult:
+    data = _load("soc_closeout")
+    alert = security_incidents.SecurityAlert(**data["alert"])
+    return soc_agents.run_closeout_agent(
+        CloseoutRequest(
+            alert=alert,
+            triage_decision=data["triage_decision"],
+            recovery_decision=data.get("recovery_decision"),
+            monitoring_clean=data["monitoring_clean"],
+        )
+    )
+
+
 USE_CASES: dict[str, Callable[[], UseCaseResult]] = {
     "customer_support": _run_customer_support,
     "model_routing": _run_model_routing,
@@ -253,6 +307,13 @@ USE_CASES: dict[str, Callable[[], UseCaseResult]] = {
     "security_incident_copilot": _run_incident_copilot,
     "security_guarded_assistant": _run_guarded_assistant,
     "security_tool_gate": _run_security_tool_gate,
+    "soc_triage": _run_soc_triage,
+    "soc_mitigation": _run_soc_mitigation,
+    "soc_investigation": _run_soc_investigation,
+    "soc_escalation": _run_soc_escalation,
+    "soc_recovery": _run_soc_recovery,
+    "soc_closeout": _run_soc_closeout,
+    "soc_pipeline": _run_soc_pipeline,
     "invoice_processing": _run_invoice,
     "agent_trace": _run_agent_trace,
     "recruiting": _run_recruiting,

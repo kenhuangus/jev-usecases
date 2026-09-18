@@ -57,6 +57,8 @@ The initial set covers the decision types TypeSafe documents: classification, de
 
 Three further runners add a generative model beside Jev for security text. Those are `security_incident_copilot`, `security_guarded_assistant`, and `security_tool_gate`.
 
+Seven further runners are the agentic SOC. `soc_triage` is the triage agent. `soc_mitigation` is the mitigation agent. `soc_investigation`, `soc_escalation`, `soc_recovery`, and `soc_closeout` cover evidence collection, paging, restore, and case close. `soc_pipeline` runs triage, investigation, mitigation, and escalation in that order. None of these runners isolate a host or run a shell command.
+
 ## Use cases included
 
 Each use case builds typed state and Jev questions (`Choice`, `Score`, `Noul`), calls the live TypeSafe API, applies decision logic in code, and returns a `UseCaseResult` with `decision`, `action_band`, and `actions`.
@@ -72,6 +74,13 @@ Each use case builds typed state and Jev questions (`Choice`, `Score`, `Noul`), 
 | `security_incident_copilot` | Incident procedure, then a Claude or OpenAI analyst brief, then Jev verification of that brief |
 | `security_guarded_assistant` | Jev checks the prompt, the language model answers only if allowed, Jev checks the completion |
 | `security_tool_gate` | Language model proposes one shell command; Jev allow/ask/block. The command is not executed |
+| `soc_triage` | SOC triage agent: eight closed questions, then close, notify, queue, or contain |
+| `soc_mitigation` | Mitigation agent: approves or holds isolate, session revoke, credential reset, and lateral block. It does not perform those actions |
+| `soc_investigation` | Investigation agent: names log collections (`collect:auth_logs` and the other `collect:*` actions) |
+| `soc_escalation` | Escalation agent: page on-call, hand to incident response, or keep the queue |
+| `soc_recovery` | Recovery agent: remain isolated, limited restore, or full restore. Hours and the monitoring flag come from the caller |
+| `soc_closeout` | Closeout agent: close, monitor, or reopen. A containment case cannot close before a restore decision |
+| `soc_pipeline` | Intake order: triage, then investigation, mitigation, and escalation. Containment actions come only from the mitigation agent |
 | `invoice_processing` | AP pay / hold / dispute / fraud review |
 | `agent_trace` | Post-run human-review urgency |
 | `recruiting` | Required-skill checks plus a weighted fit score |
@@ -112,6 +121,26 @@ Figure 3 shows the check order: a blocked prompt never reaches the language mode
 
 *Figure 3: Jev checks the prompt and the draft*
 
+## Agentic SOC agents
+
+The SOC runners are the initial implementation of an agentic security operations flow. Jev answers closed questions. Code selects the action names. The caller executes them.
+
+`soc_triage` calls `triage_security_incident`. The decision is `auto_close`, `notify_user`, `queue_tier2`, or `contain_now`. On 18 September 2026 the committed fixture returned `contain_now` from `jev-1.13.0`.
+
+`soc_mitigation` runs only after that decision is `contain_now`. It asks whether isolation, session revocation, credential reset, and a lateral block are warranted, and whether the plan is broader than the evidence. A critical asset stays on `confirm` and adds `page:security_oncall`. If triage did not select `contain_now`, this agent returns `no_mitigation` and an empty action list.
+
+`soc_investigation` returns `collect:auth_logs`, `collect:process_tree`, `collect:network_logs`, or `collect:identity_logs`. Those names are collection tasks for the caller. They are not shell commands.
+
+`soc_escalation` chooses `page:security_oncall`, `handoff:incident_response`, `notice:affected_users`, or `stay:queue`. A critical asset or a `contain_now` decision pages on-call even when the Choice is `queue`.
+
+`soc_recovery` reads `hours_contained` and `monitoring_clean` from the caller. Jev does not compute elapsed time. The agent keeps isolation when monitoring is not clean, or when a `contain_now` case has been contained for under four hours. `full_restore` still returns `confirm`, not `auto`.
+
+`soc_closeout` cannot close a `contain_now` case until recovery has returned `limited_restore` or `full_restore`.
+
+`soc_pipeline` calls triage once, then investigation, mitigation, and escalation with that same triage result. It removes `isolate_host`, `disable_sessions`, `block_lateral_paths`, and `force_password_reset` from the triage action list and publishes only the actions the mitigation agent approved.
+
+`jev-usecases soc` runs these seven runners. It does not call Claude or OpenAI. Recovery and closeout are separate later steps because they need facts the intake alert does not contain.
+
 ## Run the initial set
 
 Python 3.10 or newer. Copy `.env.example` to `.env` and set `TYPESAFE_API_KEY`. Do not commit `.env`.
@@ -123,7 +152,7 @@ jev-usecases list
 jev-usecases run customer_support
 ```
 
-`jev-usecases run-all` calls every registered runner, including the three security runners that need a reachable Claude or OpenAI endpoint. `jev-usecases security` runs only those three. `pytest -m "not live"` checks thresholds and provider selection without the network. `pytest -m live` calls TypeSafe and needs `TYPESAFE_API_KEY`.
+`jev-usecases run-all` calls every registered runner, including the three security runners that need a reachable Claude or OpenAI endpoint and the seven SOC runners that call only Jev. `jev-usecases security` runs only those three language-model runners. `jev-usecases soc` runs the seven SOC runners. `pytest -m "not live"` checks thresholds, SOC action policy, and provider selection without the network. `pytest -m live` calls TypeSafe and needs `TYPESAFE_API_KEY`.
 
 A library call does not go through the CLI. This support example builds state, asks Jev, and returns the decision object:
 
@@ -157,7 +186,7 @@ TypeSafe's workflow evals on <a href="https://evals.typesafe.ai/" target="_blank
 1. Jev answers closed questions. Choice, Score, and Noul come back with probabilities. The model does not write the string the user reads.
 2. Code selects the next action. Thresholds, money, dates, and tool execution stay in code, not in Jev.
 3. A wrong but valid label is still possible. Require higher confidence for high-cost actions, and send low-confidence cases to a person.
-4. This repository is the initial implementation of most published Jev use cases, plus three security runners. Jev checks the prompt before the generative call and checks the completion after it. The generative call uses Claude when a Claude key is set, and OpenAI otherwise.
+4. This repository is the initial implementation of most published Jev use cases, plus three security runners and seven SOC runners (triage, mitigation, investigation, escalation, recovery, closeout, and the intake pipeline). Jev checks the prompt before the generative call and checks the completion after it. The generative call uses Claude when a Claude key is set, and OpenAI otherwise. The SOC runners call Jev only and do not change hosts.
 5. Fixture success on `jev-1.13.0` shows the calls return typed decisions. It does not show that the procedures are safe to run without review.
 
 Additional reading on control of long-running multi-agent systems is <a href="https://www.amazon.com/dp/B0HF3F86YM" target="_blank">Harness Engineering</a>, and on agent graph structure is <a href="https://www.amazon.com/dp/B0HHZVDQQY" target="_blank">Graph Engineering for Agentic AI Systems</a>.

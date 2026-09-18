@@ -114,5 +114,37 @@ def security_cmd(json_out: bool) -> None:
         sys.exit(1)
 
 
+@main.command("soc")
+@click.option("--json-out", "json_out", is_flag=True)
+def soc_cmd(json_out: bool) -> None:
+    """Run the agentic SOC agents. These call Jev only. They do not change hosts."""
+    names = (
+        "soc_pipeline",
+        "soc_triage",
+        "soc_mitigation",
+        "soc_investigation",
+        "soc_escalation",
+        "soc_recovery",
+        "soc_closeout",
+    )
+    payload = []
+    failed = False
+    for name in names:
+        console.print(f"[cyan]Running {name}...[/cyan]")
+        try:
+            result = run_use_case(name)
+        except Exception as exc:  # noqa: BLE001
+            failed = True
+            console.print(f"  [red]FAIL[/red] {type(exc).__name__}: {exc}")
+            payload.append({"use_case": name, "error": f"{type(exc).__name__}: {exc}"})
+            continue
+        console.print(f"  [green]OK[/green] {result.decision} ({result.action_band})")
+        payload.append(result.to_cli_dict())
+    if json_out:
+        click.echo(json.dumps(payload, indent=2))
+    if failed:
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     main()
