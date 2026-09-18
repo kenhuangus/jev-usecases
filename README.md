@@ -2,25 +2,25 @@
 
 Jev returns Choice, Score, and Noul probabilities in 70 to 500 ms. This repository is the initial implementation of most of the decisions TypeSafe lists for that model.
 
-Jev is the first public System One model from <a href="https://typesafe.ai" target="_blank">TypeSafe AI</a>. Diogo Almeida announced it on 15 September 2026 after TypeSafe left stealth with a seed round led by DCVC. The model does not write prose. A program sends state plus typed questions. Jev returns a value inside the schema the program declared, plus a probability the program can threshold.
+Jev is the first public System One model from <a href="https://typesafe.ai" target="_blank">TypeSafe AI</a>. Diogo Almeida announced it on 15 September 2026, when TypeSafe made the company public, after a seed round led by DCVC. The model does not write prose. A program sends state plus typed questions. Jev returns a value inside the schema the program declared, plus a probability the program can threshold.
 
 ## What Jev is
 
-A language model samples the next token from the tokens it already wrote. Software that needs a department, a severity, or a yes-or-no must parse that string and still handle a refusal, a type error, or an invented field. Jev drops string generation. TypeSafe trains it with reinforcement learning for calibrated decisions (RLCD), so the training target is an honest probability on a closed question, not a preferred paragraph.
+A language model samples the next token from the tokens it already wrote. Software that needs a department, a severity, or a yes-or-no must parse that string and still handle a refusal, a type error, or an invented field. Jev does not generate strings. TypeSafe trains it with reinforcement learning for calibrated decisions (RLCD). The training target is a calibrated probability on a closed question, not a paragraph a rater prefers.
 
-The public API is one endpoint, `POST https://api.typesafe.ai/v1/systemone`. The body carries `state` (a string, object, or array) and a map of questions. Three question types cover the closed decisions this repository implements:
+The public API is one endpoint, `POST https://api.typesafe.ai/v1/systemone`. The body contains `state` (a string, object, or array) and a map of questions. Three question types cover the closed decisions this repository implements:
 
 - **Choice** picks one option from a set you name. The limit is 1 to 255 options. The answer includes the selected key, a probability for every key, and a confidence score.
 - **Score** places the state on an ordered rubric of 2 to 10 levels. The answer can fall between levels. It also includes the level probabilities and a confidence score.
-- **Noul** answers a yes-or-no instruction with a single probability from 0 to 1. That number is the belief. Noul does not add a separate confidence field.
+- **Noul** answers a yes-or-no instruction with a single probability from 0 to 1. That number is the estimated probability that the statement is true. Noul does not add a separate confidence field.
 
-All three types can sit in one request. TypeSafe states that Jev evaluates them in parallel against the same state, so a tenth question adds tokens and almost no latency. Adding a question does not feed that answer into the next question.
+All three types can sit in one request. TypeSafe states that Jev evaluates them in parallel against the same state, so a tenth question adds tokens and almost no latency. Adding a question does not pass that answer as input to the next question.
 
-TypeSafe publishes the cost and latency comparison in the launch note. Input is USD 0.042 per million tokens. Output tokens are not billed. End-to-end time on their West Coast service is 70 to 500 ms, against 3 to 329 seconds for the frontier chat models they timed on the same decision shape. Those figures are TypeSafe's, not an independent benchmark. Schema match is guaranteed: Jev cannot return a key you did not declare. It can still return the wrong valid key. Confidence is the signal for that case. Higher confidence tracks higher accuracy in aggregate on their calibration work, and you still set the threshold in code for the cost of being wrong.
+TypeSafe publishes the cost and latency comparison in the launch note. Input is USD 0.042 per million tokens. Output tokens are not billed. End-to-end time on their West Coast service is 70 to 500 ms, against 3 to 329 seconds for the largest chat models they timed on the same task. Those figures are TypeSafe's, not an independent benchmark. Schema match is guaranteed: Jev cannot return a key you did not declare. It can still return the wrong valid key. Use the confidence value to decide whether to accept that label. On their calibration results, higher confidence corresponds to higher accuracy in aggregate. You still set the threshold in code according to the cost of a wrong label.
 
-The name System One follows Daniel Kahneman's fast judgment in *Thinking, Fast and Slow*. The model name follows William Stanley Jevons. TypeSafe's claim is that a large drop in the cost of a closed decision makes many more of those decisions worth automating. Jev is not a smaller chat model. It has no text decoder for this job. Current model id in our fixture runs was `jev-1.13.0`.
+The class name System One refers to Daniel Kahneman's term for fast judgment in *Thinking, Fast and Slow*. The model name refers to William Stanley Jevons. TypeSafe states that a large decrease in the cost of a closed decision makes many more of those decisions worth running in software. Jev is not a smaller chat model. It has no text decoder for this task. Current model id in our fixture runs was `jev-1.13.0`.
 
-Figure 1 is the split TypeSafe draws between a language model and Jev: string generation versus a typed probability the program can branch on.
+Figure 1 compares a language model with Jev: the language model generates a string, and Jev returns a typed probability the program uses in an if-statement.
 
 ![Language model versus Jev](figures/fig1-llm-vs-jev.png)
 
@@ -28,13 +28,13 @@ Figure 1 is the split TypeSafe draws between a language model and Jev: string ge
 
 ## How a call is built
 
-Each module in this repository follows the same contract. The program assembles state from records it already trusts. It asks several narrow questions in one call. It reads probabilities. It applies thresholds, playbooks, and exact checks that do not belong in a model: sums, dates, duplicate flags, protected-path matches. The return value is a `UseCaseResult` with `decision`, `action_band`, and `actions`. The caller performs the action. Jev does not send email, move money, or run a shell command.
+Each module in this repository uses the same steps. The program assembles state from records it already has. It asks several narrow questions in one call. It reads probabilities. It applies thresholds, written procedures, and exact checks that code should compute instead of the model: sums, dates, duplicate flags, protected-path matches. The return value is a `UseCaseResult` with `decision`, `action_band`, and `actions`. The caller performs the action. Jev does not send email, move money, or run a shell command.
 
-`action_band` is one of `auto`, `confirm`, `human`, or `block`. A read-only lookup can auto-act at a lower confidence than a refund or a host isolation. A flat probability distribution usually means the criteria are too close, not that the model is "confused" in a way you should ignore.
+`action_band` is one of `auto`, `confirm`, `human`, or `block`. A read-only lookup can run automatically at a lower confidence than a refund or a host isolation. A flat probability distribution means the option descriptions do not separate the options.
 
-TypeSafe's own jaggedness note for `jev-1.13` is part of the contract. Jev reads the instruction literally. It does not count reliably, and it does not compare dates as ordered quantities. Accuracy falls when state contains fields the question does not need. User-controlled text in state can steer the answer, so a guardrail that puts attacker text in state has to be tested. Contradictory criteria underperform. Jev does not generate the missing sentence, the code diff, or the audit narrative. When a workflow needs those strings, a generative model writes them and Jev checks the draft.
+TypeSafe's jaggedness note for `jev-1.13` lists known failures. Jev reads the instruction literally. It does not count reliably, and it does not compare dates as ordered quantities. Accuracy decreases when state contains fields the question does not need. User-controlled text in state can change the answer, so a check that puts that text in state has to be tested. Contradictory criteria score worse. Jev does not generate the missing sentence, the code diff, or the audit narrative. When a workflow needs those strings, a generative model writes them and Jev checks the draft.
 
-Figure 2 is that contract as five steps: state, questions, Jev, code, then a result the caller executes.
+Figure 2 lists those steps: state, questions, Jev, code, then a result the caller executes.
 
 ![Five-step Jev call](figures/fig2-call-path.png)
 
@@ -42,13 +42,13 @@ Figure 2 is that contract as five steps: state, questions, Jev, code, then a res
 
 ## Why this repository exists
 
-Chat models have been strong at text for years. The missing piece Almeida names in the launch note is automation: a decision a dependency chain can call without parsing a paragraph and without a human in the loop on every branch. TypeSafe's use-case map and workflow evals show the shape. Security alerts, invoices, support threads, and finished agent traces become many small questions plus rules in code. The four published workflows (security incidents, invoice processing, customer service, agent-trace review) score models on agreement with a fixed harness, not on a claim that the harness is the only correct policy.
+Chat models have produced usable text for years. Almeida states in the launch note that the missing capability is automation: a decision other code can call without parsing a paragraph and without a person reviewing every decision. TypeSafe's use-case map and workflow evals describe this task structure. Security alerts, invoices, support threads, and finished agent traces become many small questions plus rules in code. The four published workflows (security incidents, invoice processing, customer service, agent-trace review) score models on agreement with one fixed evaluation program, not on a claim that this program is the only correct policy.
 
-We built this repository to put most of those decisions into callable Python, with fixtures a developer can run against the live API. It is the initial implementation of that map. It is not a statement that the thresholds, playbooks, or labels are ready for a production queue. Tune confidence cutoffs on labeled traffic before any auto-action moves money, isolates a host, or rejects a person.
+We built this repository to put most of those decisions into callable Python, with fixtures a developer can run against the live API. It is the initial implementation of those use cases. It is not a claim that the thresholds, procedures, or labels are ready to run unattended in production. Set confidence cutoffs on labeled traffic before any automatic action moves money, isolates a host, or rejects a person.
 
-On 18 September 2026 the 27 runners that call only Jev each returned a decision from `jev-1.13.0` on the committed fixtures. That run checks wiring and schema. It does not certify accuracy.
+On 18 September 2026 the 27 runners that call only Jev each returned a decision from `jev-1.13.0` on the committed fixtures. That run checks that each request returns a typed answer. It does not measure whether the answer is correct.
 
-The initial set covers the decision shapes TypeSafe documents: classification, detection, scoring, routing, search and ranking, verification, feature extraction, and bounded extraction. The modules are:
+The initial set covers the decision types TypeSafe documents: classification, detection, scoring, routing, search and ranking, verification, feature extraction, and bounded extraction. The modules are:
 
 - **Routing and triage.** `customer_support`, `model_routing`, `lead_generation`, `gaming`, `agent_harness`.
 - **Verification and guardrails.** `llm_guardrails`, `rag_retrieval`, `citation_check`, `agent_trace`, `semantic_linting`, `coding_agent_guardrails`.
@@ -64,17 +64,17 @@ Each use case builds typed state and Jev questions (`Choice`, `Score`, `Noul`), 
 | Name | What it does |
 |---|---|
 | `customer_support` | Intent/department routing, urgency, refund policy automation |
-| `model_routing` | Cascade cheap vs frontier LLM selection |
+| `model_routing` | Choose a lower-cost model or a higher-capability model |
 | `llm_guardrails` | Jailbreak / injection / PII / tool-call screening |
 | `rag_retrieval` | Passage relevance + injection filter for RAG |
 | `citation_check` | Claim vs source support verification |
-| `security_incidents` | SOC close / queue / contain playbook |
-| `security_incident_copilot` | Jev playbook, then a Claude or OpenAI analyst brief, then Jev verification of that brief |
-| `security_guarded_assistant` | Jev screens the prompt, the language model answers only if allowed, Jev screens the completion |
+| `security_incidents` | SOC decision: close, queue, or contain |
+| `security_incident_copilot` | Incident procedure, then a Claude or OpenAI analyst brief, then Jev verification of that brief |
+| `security_guarded_assistant` | Jev checks the prompt, the language model answers only if allowed, Jev checks the completion |
 | `security_tool_gate` | Language model proposes one shell command; Jev allow/ask/block. The command is not executed |
 | `invoice_processing` | AP pay / hold / dispute / fraud review |
 | `agent_trace` | Post-run human-review urgency |
-| `recruiting` | Must-have gates + composite fit scoring |
+| `recruiting` | Required-skill checks plus a weighted fit score |
 | `lead_generation` | ICP fit and sales priority |
 | `insurance_claims` | STP vs SIU vs specialist routing |
 | `financial_crime` | AML alert prioritization |
@@ -88,29 +88,29 @@ Each use case builds typed state and Jev questions (`Choice`, `Score`, `Noul`), 
 | `knowledge_graph` | Entity merge vs curator review |
 | `semantic_linting` | CI semantic lints for code/writing |
 | `feature_extraction` | Calibrated ML features from text |
-| `coding_agent_guardrails` | Shell/write tool-call probability gate |
+| `coding_agent_guardrails` | Probability check before a shell, write, or edit tool call |
 | `function_calling` | Closed-catalog NL→typed function calls |
-| `hierarchical_classification` | Taxonomy beam walk with abstention |
+| `hierarchical_classification` | Hierarchical classification by beam search; stops when confidence is low |
 | `scientific_discovery` | Systematic-review paper screening |
 | `agent_harness` | Continue/retry/ask/stop + skill suggestion |
 
-## Security paths: Jev gates the language model
+## Security paths: Jev checks calls to the language model
 
-A security workflow that needs a sentence still needs a language model. Jev does not write the analyst brief. The initial security runners keep the playbook in code, call Jev first, and call a generative model only when the gate allows it.
+A security workflow that needs a sentence still needs a language model. Jev does not write the analyst brief. The initial security runners keep the procedure in code, call Jev first, and call a generative model only when that check returns allow.
 
 Provider selection lives in `jev_usecases.llm`. If `ANTHROPIC_API_KEY` or `CLAUDE_API_KEY` is set, the client calls Claude (`ANTHROPIC_MODEL`, default `claude-sonnet-4-5`). If neither Claude key is set, the client uses `OPENAI_API_KEY` (`OPENAI_MODEL`, default `gpt-4.1-mini`). There is no third provider.
 
-`security_incident_copilot` runs the incident playbook, asks the language model for a brief that must follow that decision, then asks Jev whether the brief matches the decision, stays inside the alert text, and stays defensive. A failed check discards the brief. The playbook decision remains.
+`security_incident_copilot` runs the incident procedure, asks the language model for a brief that must follow that decision, then asks Jev whether the brief matches the decision, adds no facts absent from the alert, and includes no attack procedure. A failed check discards the brief. The procedure decision remains.
 
-`security_guarded_assistant` screens the user text before any generative call. A block returns without calling Claude or OpenAI. An allowed call is screened again on the completion.
+`security_guarded_assistant` checks the user text before any generative call. A block returns without calling Claude or OpenAI. An allowed call is checked again on the completion.
 
-`security_tool_gate` asks the language model for one shell command, then runs the same tool gate used by `coding_agent_guardrails`. The runner does not execute the command. `approved` in the metadata is the only signal a caller should trust, and even an allow is still the initial gate, not a change-management approval.
+`security_tool_gate` asks the language model for one shell command, then runs the same tool check used by `coding_agent_guardrails`. The runner does not execute the command. `approved` in the metadata is the only field the caller should read before running the command. An allow from this initial check is not a change-management approval.
 
-Figure 3 is that gate: a blocked prompt never reaches the language model, and a draft that fails the second screen is discarded.
+Figure 3 shows the check order: a blocked prompt never reaches the language model, and a draft that fails the second check is discarded.
 
-![Jev security gate around a language model](figures/fig3-security-gate.png)
+![Jev checks the prompt and the draft](figures/fig3-security-gate.png)
 
-*Figure 3: Jev screens the prompt and the draft*
+*Figure 3: Jev checks the prompt and the draft*
 
 ## Run the initial set
 
@@ -140,23 +140,23 @@ result = evaluate_support(
 print(result.decision, result.action_band, result.actions)
 ```
 
-The function sends one System One request, applies the refund playbook in code, and returns `auto`, `confirm`, `human`, or `block`. It does not call a payment API.
+The function sends one System One request, applies the refund rules in code, and returns `auto`, `confirm`, `human`, or `block`. It does not call a payment API.
 
 ## What this initial implementation leaves out
 
-Jev's context is text. Images, audio, and video have to be transcribed or described before they enter state. Open extraction of an unknown string is the wrong primitive. Enumerate candidates in code or with a generative model, then let Jev pick. Counting and date order belong in code. A question that hides several judgments in one sentence should be split. The workflow evals on <a href="https://evals.typesafe.ai/" target="_blank">evals.typesafe.ai</a> measure agreement with GPT-6 Astra and Claude Fable 5.1 at high thinking, not agreement with a human label set. Treat those charts as a cost and latency comparison under one harness.
+Jev's context is text. Images, audio, and video have to be transcribed or described before they enter state. Asking Jev to emit an unknown free-text string is the wrong question type. Enumerate candidates in code or with a generative model, then let Jev pick. Counting and date order are computed in code. A question that combines several judgments in one sentence should be split. The workflow evals on <a href="https://evals.typesafe.ai/" target="_blank">evals.typesafe.ai</a> measure agreement with GPT-6 Astra and Claude Fable 5.1 at high thinking, not agreement with a human label set. Read those charts as a cost and latency comparison under one evaluation program.
 
 Thresholds in `jev_usecases.decisions` are starting numbers. They are not fitted to a production false-positive budget.
 
 ## Key Takeaways
 
-1. Jev answers closed questions. Choice, Score, and Noul come back with probabilities. The model does not write the string your user reads.
-2. Code owns the branch. Thresholds, money, dates, and tool execution stay outside the model.
-3. A wrong but valid label is still possible. Gate high-cost actions on confidence, and send the low-confidence tail to a person.
-4. This repository is the initial implementation of most published Jev use cases, plus three security runners that put Claude, or OpenAI if no Claude key is set, behind a Jev screen.
-5. Fixture success on `jev-1.13.0` shows the calls return typed decisions. It does not show that the playbooks are safe to automate.
+1. Jev answers closed questions. Choice, Score, and Noul come back with probabilities. The model does not write the string the user reads.
+2. Code selects the next action. Thresholds, money, dates, and tool execution stay in code, not in Jev.
+3. A wrong but valid label is still possible. Require higher confidence for high-cost actions, and send low-confidence cases to a person.
+4. This repository is the initial implementation of most published Jev use cases, plus three security runners. Jev checks the prompt before the generative call and checks the completion after it. The generative call uses Claude when a Claude key is set, and OpenAI otherwise.
+5. Fixture success on `jev-1.13.0` shows the calls return typed decisions. It does not show that the procedures are safe to run without review.
 
-Additional reading on harness control for long-horizon agents is <a href="https://www.amazon.com/dp/B0HF3F86YM" target="_blank">Harness Engineering</a>, and on agent graph structure is <a href="https://www.amazon.com/dp/B0HHZVDQQY" target="_blank">Graph Engineering for Agentic AI Systems</a>.
+Additional reading on control of long-running multi-agent systems is <a href="https://www.amazon.com/dp/B0HF3F86YM" target="_blank">Harness Engineering</a>, and on agent graph structure is <a href="https://www.amazon.com/dp/B0HHZVDQQY" target="_blank">Graph Engineering for Agentic AI Systems</a>.
 
 ## References
 
