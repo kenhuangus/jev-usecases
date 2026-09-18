@@ -57,6 +57,43 @@ The initial set covers the decision shapes TypeSafe documents: classification, d
 
 Three further runners add a generative model beside Jev for security text. Those are `security_incident_copilot`, `security_guarded_assistant`, and `security_tool_gate`.
 
+## Use cases included
+
+Each use case builds typed state and Jev questions (`Choice`, `Score`, `Noul`), calls the live TypeSafe API, applies decision logic in code, and returns a `UseCaseResult` with `decision`, `action_band`, and `actions`.
+
+| Name | What it does |
+|---|---|
+| `customer_support` | Intent/department routing, urgency, refund policy automation |
+| `model_routing` | Cascade cheap vs frontier LLM selection |
+| `llm_guardrails` | Jailbreak / injection / PII / tool-call screening |
+| `rag_retrieval` | Passage relevance + injection filter for RAG |
+| `citation_check` | Claim vs source support verification |
+| `security_incidents` | SOC close / queue / contain playbook |
+| `security_incident_copilot` | Jev playbook, then a Claude or OpenAI analyst brief, then Jev verification of that brief |
+| `security_guarded_assistant` | Jev screens the prompt, the language model answers only if allowed, Jev screens the completion |
+| `security_tool_gate` | Language model proposes one shell command; Jev allow/ask/block. The command is not executed |
+| `invoice_processing` | AP pay / hold / dispute / fraud review |
+| `agent_trace` | Post-run human-review urgency |
+| `recruiting` | Must-have gates + composite fit scoring |
+| `lead_generation` | ICP fit and sales priority |
+| `insurance_claims` | STP vs SIU vs specialist routing |
+| `financial_crime` | AML alert prioritization |
+| `legal_compliance` | Required clauses / prohibited claims |
+| `ecommerce` | Listing moderation and category normalization |
+| `moderation` | Trust & safety allow/warn/remove/ban |
+| `advertising` | Brand safety and claim compliance |
+| `gaming` | Player toxicity / churn / support routing |
+| `risk_assessment` | Unstructured risk typing and escalation |
+| `demand_forecasting` | Semantic demand features for forecasting models |
+| `knowledge_graph` | Entity merge vs curator review |
+| `semantic_linting` | CI semantic lints for code/writing |
+| `feature_extraction` | Calibrated ML features from text |
+| `coding_agent_guardrails` | Shell/write tool-call probability gate |
+| `function_calling` | Closed-catalog NL→typed function calls |
+| `hierarchical_classification` | Taxonomy beam walk with abstention |
+| `scientific_discovery` | Systematic-review paper screening |
+| `agent_harness` | Continue/retry/ask/stop + skill suggestion |
+
 ## Security paths: Jev gates the language model
 
 A security workflow that needs a sentence still needs a language model. Jev does not write the analyst brief. The initial security runners keep the playbook in code, call Jev first, and call a generative model only when the gate allows it.
